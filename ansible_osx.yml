@@ -1,12 +1,12 @@
 ---
 - hosts: localhost
-  tasks:
+  tasks: 
     - name: Install homebrew
-      include_role:
+      include_role: 
         name: geerlingguy.mac.homebrew
 
     - name: Make sure homebrew bin is in path
-      ansible.builtin.lineinfile:
+      ansible.builtin.lineinfile: 
         path: /etc/paths
         state: present
         line: '/opt/homebrew/bin'
@@ -14,91 +14,154 @@
       become_user: root
 
     - name: 'add custom homebrew repos'
-      community.general.homebrew_tap:
+      community.general.homebrew_tap: 
         name: [
-          adoptopenjdk/openjdk,
-          fishtown-analytics/dbt,
-          heroku/brew,
-          homebrew/cask-versions,
-          thoughtbot/formulae,
-          weaveworks/tap,
-        ]
+            adoptopenjdk/openjdk,
+            shopify/shopify,
+            heroku/brew,
+            homebrew/cask-versions,
+            homebrew/cask-fonts,
+            thoughtbot/formulae,
+            weaveworks/tap,
+            blacktop/tap,
+          ]
 
     - name: Install core packages via brew casks
-      community.general.homebrew_cask:
+      community.general.homebrew_cask: 
         name: "{{ item }}"
       ignore_errors: yes
-      with_items:
-        - 1password
+      with_items: 
+        - adobe-creative-cloud
         - android-sdk
         - android-studio
-        - datagrip
+        - arc
+        - backblaze
+        - bartender
+        - beeper
+        - blender
+        - cleanmymac
+        - dash
+        - discord
         - docker
-        - dropbox
+        - fleet
         - figma
-        - google-chrome
         - google-cloud-sdk
-        - iterm2
+        - google-chrome
+        - google-drive
+        - intellij-idea-ce
         - kindle
+        - monitorcontrol
         - ngrok
+        - notunes
+        - quicklook-json
+        - quicklook-csv
+        - qlcolorcode
+        - qlmarkdown
+        - qlstephen
+        - qlvideo
+        - qlimagesize
+        - suspicious-package 
+        - apparency 
+        - quicklookase
+        - raycast
         - slack
-        - sublime-text
+        - signal
+        - surfshark
+        - tableplus
         - telegram
+        - ticktick
         - visual-studio-code
         - vlc
+        - warp
         - zoom
-        - tuple
 
     - name: "Install homebrew packages"
-      community.general.homebrew:
+      community.general.homebrew: 
         name: [
-          'autoconf',
-          'automake',
-          'aws-iam-authenticator',
-          'awscli',
-          'bfg',
-          'coreutils',
-          'curl',
-          'dbt@0.18.0',
-          'direnv',
-          'dnsmasq',
-          'fzf',
-          'gnu-time',
-          'gpg',
-          'heroku',
-          'htop',
-          'imagemagick@6',
-          'kubectx',
-          'kubernetes-cli',
-          'kubernetes-helm',
-          'libtool',
-          'libxslt',
-          'libyaml',
-          'mas',
-          'openssl' ,
-          'pkg-config',
-          'postgresql',
-          'rcm',
-          'readline',
-          'redis',
-          'sqlite3',
-          'tmux',
-          'unixodbc',
-          'unzip',
-          'vim',
-          'watchman',
-          'xz',
-          'yarn',
-          'zlib',
-          'zsh',
-        ]
+            'autoconf',
+            'automake',
+            'aws-iam-authenticator',
+            'awscli',
+            'bfg',
+            'coreutils',
+            'curl',
+            'direnv',
+            'awscli',
+            'azure-cli',
+            'bitwarden-cli',
+            'chezmoi',
+            'lporg',
+            'exercism',
+            'fnm',
+            'gh',
+            'go',
+            'kubernetes-cli',
+            'lefthook',
+            'pnpm',
+            'poetry',
+            'rustup-init',
+            'sheldon',
+            'shopify-cli',
+            'starship',
+            'opentofu',
+            'tmux',
+            'tree',
+            'tree-sitter',
+            'uru',
+            'fzf',
+            'htop',
+            'kubectx',
+            'kubernetes-cli',
+            'kubernetes-helm',
+            'libtool',
+            'libxslt',
+            'libyaml',
+            'mas',
+            'openssl' ,
+            'pkg-config',
+            'postgresql',
+            'rcm',
+            'readline',
+            'redis',
+            'sqlite3',
+            'tmux',
+            'unixodbc',
+            'unzip',
+            'vim',
+            'watchman',
+            'xz',
+            'yarn',
+            'zlib',
+            'zsh',
+          ]
         state: present
         update_homebrew: yes
 
+    - name: ensure fonts directory
+      file:
+        path: "{{ lookup('env', 'HOME') }}/.fonts"
+        state: directory
+
+    - name: Hack exists
+      shell: "ls {{ lookup('env', 'HOME') }}/.fonts/Hack*Nerd*Font*Complete*"
+      register: hack_exists
+      ignore_errors: yes
+
+    - name: Download Hack
+      when: hack_exists is failed
+      ansible.builtin.unarchive:
+        src: https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Hack.zip
+        dest: "{{ lookup('env', 'HOME') }}/.fonts/"
+        remote_src: yes
+
     - name: "Install from Mac app store"
       shell: mas install {{ item }}
-      with_items:
-        - 497799835 # xcode
+      with_items: 
+        - 497799835  # xcode
+        - 1352778147 # bitwarden
+        - 1446377255 # menu-world-time
+        - 937984704  # amphetamine
+        - 571213070  # davinci resolve
 
     - name: Get the path to ZSH
       become: false
@@ -106,36 +169,31 @@
       register: zsh_path
 
     - name: "Ensure homebrew zsh is in allowed shells"
-      lineinfile:
+      lineinfile: 
         path: /etc/shells
         line: "{{ zsh_path.stdout }}"
       become: true
-
-    - name: Install Oh My ZSH
-      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-      args:
-        creates: "/Users/{{ lookup('env', 'USER') }}/.oh-my-zsh"
 
     - name: Set ZSH as the default shell
       shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
       become: true
 
     - name: "Create a default ZSH configuration"
-      template:
+      template: 
         src: templates/.zshrc.j2
         dest: /Users/{{ lookup('env', 'USER') }}/.zshrc
         owner: "{{ lookup('env', 'USER') }}"
         force: yes
 
     - name: Create a default VSCode configuration
-      template:
+      template: 
         src: templates/vscode-settings.json.j2
         dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/settings.json
         owner: "{{ lookup('env', 'USER') }}"
         force: yes
 
-    - name: Create a default VSCode keuybinding configuration
-      template:
+    - name: Create a default VSCode keybinding configuration
+      template: 
         src: templates/vscode-keybindings.json.j2
         dest: /Users/{{ lookup('env', 'USER') }}/Library/Application Support/Code/User/keybindings.json
         owner: "{{ lookup('env', 'USER') }}"
@@ -144,12 +202,11 @@
     # Add something which ensures path is set here
     - name: Install VSCode extensions
       shell: code --install-extension {{ item }}
-      with_items:
+      with_items: 
         - apollographql.vscode-apollo
         - bradlc.vscode-tailwindcss
         - castwide.solargraph
         - clinyong.vscode-css-modules
-        - eamodio.gitlens
         - jakebecker.elixir-ls
         - kaiwood.endwise
         - karunamurti.haml
@@ -159,85 +216,282 @@
         - rebornix.ruby
         - richie5um2.vscode-sort-json
         - Tyriar.sort-lines
-        - vscodevim.vim
         - wholroyd.jinja
         - wingrunr21.vscode-ruby
         - xabikos.javascriptsnippets
         - streetsidesoftware.code-spell-checker
         - fabiospampinato.vscode-todo-plus
 
-    - git:
-        repo: https://github.com/asdf-vm/asdf.git
-        dest: "/Users/{{ lookup('env', 'USER') }}/.asdf"
-        version: v0.8.1
+    - name: Setting languages
+      community.general.osx_defaults: 
+        key: AppleLanguages
+        type: array
+        value: 
+          - en
+          - de
 
-    - name: "Create a default asdf configuration"
-      template:
-        src: templates/.asdfrc.j2
-        dest: /Users/{{ lookup('env', 'USER') }}/.asdfrc
-        owner: "{{ lookup('env', 'USER') }}"
-        force: yes
+    - name: Use touch id for sudo
+      community.general.osx_defaults: 
+        key: "auth sufficient pam_tid.so"
+        type: string
+        value: "auth sufficient pam_tid.so"
 
-    - name: "Install asdf plugins"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        asdf plugin-add {{ item }} || exit 0
-      with_items:
-        - ruby
-        - elixir
-        - nodejs
-        - python
-        - erlang
+    - name: Show finder as columns by default
+      community.general.osx_defaults: 
+        key: FXPreferredViewStyle
+        type: string
+        value: clmv
 
-    - name: "Install Default Python"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        asdf install python 3.10.0
-        asdf global python 3.10.0
-        pip3 install ansible
-        asdf reshim python
+    - name: Show hidden files in finder
+      community.general.osx_defaults: 
+        key: AppleShowAllFiles
+        type: bool
+        value: true
 
-    - name: "Install Default Ruby"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        asdf install ruby 3.0.2
-        asdf global ruby 3.0.2
-        gem install bundler
-        gem install cocoapods
-        gem install rubocop
-        gem install solargraph
+    - name: Show path bar in finder
+      community.general.osx_defaults: 
+        key: ShowPathbar
+        type: bool
+        value: true
 
-    - name: "Install default node"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        bash /Users/{{ lookup('env', 'USER') }}/.asdf/plugins/nodejs/bin/import-release-team-keyring
-        asdf install nodejs 16.4.2
-        asdf global nodejs 16.4.2
+    - name: Show percentage in battery
+      community.general.osx_defaults: 
+        key: ShowPercent
+        type: bool
+        value: true
 
-    - name: "Install default erlang"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        asdf install erlang 24.0.2
-        asdf global  erlang 24.0.2
+    - name: Show battery percentage in menu bar
+      community.general.osx_defaults: 
+        key: "com.apple.menuextra.battery"
+        domain: "ShowPercent"
+        type: bool
+        value: true
 
+    - name: Disable tip click in trackpad
+      community.general.osx_defaults: 
+        key: "com.apple.driver.AppleBluetoothMultitouch.trackpad"
+        domain: "Clicking"
+        type: bool
+        value: false
 
-    - name: "Install default elixir"
-      shell: |
-        source /Users/{{ lookup('env', 'USER') }}/.asdf/asdf.sh
-        asdf install elixir 1.12.3-otp-24
-        asdf global elixir 1.12.3-otp-24
-        mix local.hex --force
+    - name: Disable tap to drag on trackpad
+      community.general.osx_defaults: 
+        key: "com.apple.AppleMultitouchTrackpad"
+        domain: "Dragging"
+        type: bool
+        value: false
 
-    - name: Install yarn packages
-      shell: yarn global add {{ item }}
-      with_items:
-        - react-native-cli
-        - create-react-app
-        - apollo
-        - generator-generator
-        - yo
-        
-    - name: re-generate bins now we've installed some yarn packages
-      shell: asdf reshim nodejs
-        
+    - name: Disable force click on trackpad
+      community.general.osx_defaults: 
+        key: "com.apple.AppleMultitouchTrackpad.ForceClick"
+        type: bool
+        value: false
+
+    - name: Deactivate rearrange spaces based on most recent use
+      community.general.osx_defaults: 
+        key: "com.apple.dock.mru-spaces"
+        type: bool
+        value: false
+
+    - name: Don't show recent applications in dock
+      community.general.osx_defaults: 
+        key: "com.apple.dock.show-recents"
+        type: bool
+        value: false
+
+    - name: Remove all default apps from dock
+      community.general.osx_defaults: 
+        key: "com.apple.dock persistent-apps"
+        type: array
+        value: []
+
+    - name: Open new finder windows in home directory
+      community.general.osx_defaults: 
+        key: "com.apple.finder NewWindowTarget"
+        type: string
+        value: PfHm
+
+    - name: Remove recent from finder sidebar
+      community.general.osx_defaults: 
+        key: "com.apple.finder ShowRecentTags"
+        type: bool
+        value: false
+
+    - name: remove all tags from finder sidebar
+      community.general.osx_defaults: 
+        key: "com.apple.finder SidebarTagsSctionDisclosedState"
+        type: bool
+        value: false
+
+    - name: Rearrange favorites list 
+      community.general.osx_defaults: 
+        key: "com.apple.LSSharedFileList.FavoriteItems"
+        type: array
+        value: 
+          - "com.apple.finder.GoToHome"
+          - "com.apple.finder.GoToComputer"
+          - "File: ///Users/{{ lookup('env', 'USER') }}/Projects/"
+          - "com.apple.finder.GoToiCloudDrive"
+          - "com.apple.finder.GoToDownloads"
+          - "com.apple.finder.GoToDocuments"
+          - "com.apple.finder.GoToApplications"
+          - "com.apple.finder.GoToAirDrop"
+
+    - name: Group finder items by type by default
+      community.general.osx_defaults: 
+        key: "com.apple.finder FXPreferredGroupBy"
+        type: string
+        value: "Kind"
+
+    - name: Sort finder items by name by default
+      community.general.osx_defaults: 
+        key: "com.apple.finder FXPreferredSortBy"
+        type: string
+        value: "Name"
+
+    - name: Deactivate spelling correction
+      community.general.osx_defaults: 
+        key: "NSAutomaticSpellingCorrectionEnabled"
+        type: bool
+        value: false
+
+    - name: Deactivate automatic capitalization
+      community.general.osx_defaults: 
+        key: "NSAutomaticCapitalizationEnabled"
+        type: bool
+        value: false
+    
+    - name: Deactivate automatic period substitution
+      community.general.osx_defaults: 
+        key: "NSAutomaticPeriodSubstitutionEnabled"
+        type: bool
+        value: false
+
+    - name: Deactivate smart dashes
+      community.general.osx_defaults: 
+        key: "NSAutomaticDashSubstitutionEnabled"
+        type: bool
+        value: false
+
+    - name: Deactivate smart quotes
+      community.general.osx_defaults: 
+        key: "NSAutomaticQuoteSubstitutionEnabled"
+        type: bool
+        value: false
+
+    - name: Initial key repeat delay
+      community.general.osx_defaults: 
+        key: "InitialKeyRepeat"
+        type: float
+        value: 15
+
+    - name: Key repeat rate
+      community.general.osx_defaults: 
+        key: "KeyRepeat"
+        type: float
+        value: 2
+
+    - name: German date and time format
+      community.general.osx_defaults: 
+        key: "AppleLocale"
+        type: string
+        value: "de_DE@currency=EUR"
+
+    - name: 24 hour time format
+      community.general.osx_defaults: 
+        key: "AppleICUForce24HourTime"
+        type: bool
+        value: true
+
+    - name: Do not show recent applications in dock
+      community.general.osx_defaults: 
+        key: "com.apple.dock show-recents"
+        type: bool
+        value: false
+
+    - name: Set system theme to dark
+      community.general.osx_defaults: 
+        key: "AppleInterfaceStyle"
+        type: string
+        value: "Dark"
+
+    - name: Set measurements to metric
+      community.general.osx_defaults: 
+        key: "AppleMeasurementUnits"
+        type: string
+        value: "Centimeters"
+
+    - name: Set temperature to celsius
+      community.general.osx_defaults: 
+        key: "AppleTemperatureUnit"
+        type: string
+        value: "Celsius"
+
+    - name: Set first day of week to monday
+      community.general.osx_defaults: 
+        key: "AppleFirstWeekday"
+        type: int
+        value: 1
+
+    - name: Expand save panel by default
+      community.general.osx_defaults: 
+        key: "NSNavPanelExpandedStateForSaveMode"
+        type: bool
+        value: true
+
+    - name: Expand print panel by default
+      community.general.osx_defaults: 
+        key: "PMPrintingExpandedStateForPrint"
+        type: bool
+        value: true
+
+    - name: Set bluetooth audio to Apple Bitpool Min (editable)
+      community.general.osx_defaults: 
+        key: "com.apple.BluetoothAudioAgent"
+        domain: "Apple Bitpool Min (editable)"
+        type: int
+        value: 40
+
+    - name: Show external harddrives on desktop
+      community.general.osx_defaults: 
+        key: "com.apple.finder ShowExternalHardDrivesOnDesktop"
+        type: bool
+        value: true
+
+    - name: Do not show network drives on desktop
+      community.general.osx_defaults: 
+        key: "com.apple.finder ShowMountedServersOnDesktop"
+        type: bool
+        value: false
+
+    - name: Do not show removable media on desktop
+      community.general.osx_defaults: 
+        key: "com.apple.finder ShowRemovableMediaOnDesktop"
+        type: bool
+        value: false
+
+    - name: Speed up mission control animations
+      community.general.osx_defaults: 
+        key: "com.apple.dock expose-animation-duration"
+        type: float
+        value: 0.1
+
+    - name: remove shared directory from icloud sidebar
+      community.general.osx_defaults: 
+        key: "com.apple.finder SidebariCloudDesktopShow"
+        type: bool
+        value: false
+
+    - name: Move icloud folder to favorites in finder sidebar
+      community.general.osx_defaults: 
+        key: "com.apple.finder SidebariCloudDesktopShow"
+        type: bool
+        value: false
+
+    - name: Don't warn before emptying trash
+      community.general.osx_defaults: 
+        key: "com.apple.finder WarnOnEmptyTrash"
+        type: bool
+        value: false
+
 
