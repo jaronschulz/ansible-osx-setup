@@ -34,6 +34,7 @@
         - adobe-creative-cloud
         - android-sdk
         - android-studio
+        - apparency 
         - arc
         - backblaze
         - bartender
@@ -43,30 +44,30 @@
         - dash
         - discord
         - docker
-        - fleet
         - figma
-        - google-cloud-sdk
+        - fleet
         - google-chrome
+        - google-cloud-sdk
         - google-drive
         - intellij-idea-ce
         - kindle
+        - logi-options-plus
         - monitorcontrol
         - ngrok
         - notunes
-        - quicklook-json
-        - quicklook-csv
         - qlcolorcode
+        - qlimagesize
         - qlmarkdown
         - qlstephen
         - qlvideo
-        - qlimagesize
-        - suspicious-package 
-        - apparency 
+        - quicklook-csv
+        - quicklook-json
         - quicklookase
         - raycast
-        - slack
         - signal
+        - slack
         - surfshark
+        - suspicious-package 
         - tableplus
         - telegram
         - ticktick
